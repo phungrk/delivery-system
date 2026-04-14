@@ -60,57 +60,62 @@ Ghi chú rõ là đã convert.
 
 ## Format output — QUAN TRỌNG
 
-Trả về theo đúng format này, không thêm giải thích dài dòng:
+Output gồm **2 phần bắt buộc**, theo đúng thứ tự:
+
+---
+
+### Phần 1 — Capture summary (ngắn gọn)
 
 ```
-## Kết quả capture
+## Capture summary
 Nguồn: [Teams/Email/...] | Ngày: [YYYY-MM-DD] | Signals: [N]
 
----
+| Signal | Nội dung | Áp dụng vào |
+|--------|---------|------------|
+| STATUS_UPDATE | [task ID] → [status mới] | Tasks table |
+| ACTION_ITEM | [owner] / [action] / [deadline] | Tasks table (dòng mới) |
+| DECISION | [tóm tắt] | ## Decisions |
+| BLOCKER | [task] — [lý do] | ## Blockers + Tasks table |
+| RISK | [tóm tắt] | ## Team notes |
+| INFO | [tóm tắt] | ## Team notes / ## Changelog |
 
-### Cập nhật trong bảng Tasks
-<!-- Nếu không có → bỏ section này -->
-- Dòng [TASK-ID] ([title]): cột Status → "[status mới]"
-- Dòng [TASK-ID] ([title]): cột Status → "Blocked", cột Notes → "Blocked by [lý do]"
-
-### Thêm vào bảng Tasks (dòng mới)
-<!-- Nếu không có → bỏ section này -->
-<!-- Waterfall/Scrum: có cột Phase -->
-| [CODE]-T0XX | [title ngắn gọn] | [owner] | [phase] | Not Started | [YYYY-MM-DD hoặc trống] | from [nguồn] |
-<!-- Kanban: không có cột Phase -->
-| [CODE]-T0XX | [title ngắn gọn] | [owner] | Not Started | [YYYY-MM-DD hoặc trống] | from [nguồn] |
-
-### Thêm vào ## Decisions
-<!-- Nếu không có → bỏ section này -->
-- [YYYY-MM-DD]: [nội dung quyết định] *(nguồn: [source])*
-
-### Thêm vào ## Blockers
-<!-- Nếu không có → bỏ section này -->
-- [[TASK-ID hoặc chủ đề]] [mô tả blocker] — [owner] — since [YYYY-MM-DD]
-
-### Thêm vào ## Team notes
-<!-- Nếu không có → bỏ section này -->
-- [YYYY-MM-DD] [RISK/INFO] [nội dung] *(nguồn: [source])*
-
-### Thêm vào ## Changelog
-- [YYYY-MM-DD] [[SOURCE]] [tóm tắt 1 dòng cho mỗi signal] — signal: [TYPE]
-
----
-
-### Cần xác nhận
-<!-- Những gì AI không chắc, cần người dùng confirm trước khi apply -->
-- [ ] [câu hỏi cụ thể]
+⚠️ Cần xác nhận:
+- [ ] [câu hỏi cụ thể nếu có — owner không rõ, deadline mơ hồ...]
+<!-- Nếu không có gì cần xác nhận → bỏ dòng này -->
 ```
+
+---
+
+### Phần 2 — File đã cập nhật (toàn bộ nội dung)
+
+Sau capture summary, output **toàn bộ nội dung tracking file** đã được apply tất cả thay đổi.
+Người dùng chỉ cần copy toàn bộ phần này và replace nội dung file gốc — không cần merge thủ công.
+
+Bắt đầu bằng dòng phân cách rõ ràng:
+
+```
+---
+## 📄 File đã cập nhật — copy toàn bộ nội dung bên dưới để replace file gốc
+---
+```
+
+Sau đó output **nguyên vẹn toàn bộ tracking file** với các thay đổi đã được apply:
+- Cột Status đã được cập nhật tại đúng dòng
+- Dòng task mới đã được thêm vào cuối bảng Tasks
+- Mục mới đã được append vào ## Decisions / ## Blockers / ## Team notes
+- Changelog entry mới đã được append vào ## Changelog
+- Tất cả nội dung cũ giữ nguyên, không xóa, không thay đổi format
 
 ---
 
 ## Quy tắc bắt buộc
 
 - Không bịa owner — nếu không rõ → `[unclear]` + đưa vào "Cần xác nhận"
-- Không tự suy diễn deadline — nếu không có hoặc không rõ → để trống + đưa vào "Cần xác nhận"
-- Không tạo task trùng — kiểm tra existing tasks trước
-- Không xóa hay thay thế nội dung cũ — chỉ thêm mới hoặc cập nhật cột cụ thể
+- Không tự suy diễn deadline — nếu không rõ → để trống + đưa vào "Cần xác nhận"
+- Không tạo task trùng — kiểm tra existing tasks trước khi thêm mới
+- Không xóa nội dung cũ — chỉ cập nhật cột cụ thể hoặc append
 - Task ID mới = max ID hiện có + 1
+- **Phần 2 phải output đầy đủ** — không được tóm tắt hay cắt bớt nội dung file
 
 ---
 

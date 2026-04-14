@@ -13,6 +13,7 @@ Không cần Claude Code, không cần tool use, không cần memory giữa các
 | `daily-check.md` | Sáng sớm, trước standup, muốn biết hôm nay cần làm gì | tracking file(s) |
 | `sprint-report.md` | Cuối tuần / cuối sprint, tạo báo cáo gửi stakeholder | tracking file(s) |
 | `gate-check.md` | Trước khi chuyển phase, xem đã đủ điều kiện chưa | tracking file + gates.md |
+| `capy.md` | Phân tích sâu, tìm root cause, đề xuất KPI, coaching delivery | tracking file (+ gates.md / transcript nếu có) |
 
 > **Tracking file** = `project.md` (Waterfall) / `sprint-N.md` (Scrum) / `board.md` (Kanban)
 
