@@ -11,17 +11,37 @@ Không phân tích, không đưa ra nhận xét — chỉ đọc và chuẩn hó
 
 ## Quy trình
 
-1. Dùng Glob để tìm tất cả subfolder trong `input/` (bỏ qua file ở root như `_template.md`, `_meeting-template.md`)
+1. Dùng Glob để tìm tất cả subfolder trong `input/` (bỏ qua file ở root như `_template.md`, `_meeting-template.md`, `_project-context-template.md`)
    - Mỗi subfolder = 1 project, tên folder = Project Code (VD: `CL`, `NAVI`)
-2. Với mỗi project folder, đọc các tracking file theo thứ tự ưu tiên (bỏ qua file bắt đầu bằng `_`, bỏ qua `gates.md`, bỏ qua `transcript-*`):
+2. Với mỗi project folder, **đọc `project-context.md` trước** (nếu tồn tại):
+   - Trích xuất: Team roster, Timeline (start/target/milestones), Scope (total deliverables, original scope), Constraints
+   - Nếu không có file này → ghi `WARNING: project-context.md chưa tồn tại — một số phân tích sẽ bị giới hạn` và tiếp tục
+3. Đọc các tracking file theo thứ tự ưu tiên (bỏ qua file bắt đầu bằng `_`, bỏ qua `gates.md`, bỏ qua `transcript-*`, bỏ qua `project-context.md`):
    - Waterfall: `project.md`
    - Scrum: `sprint-*.md` (đọc tất cả, xử lý từng file riêng)
    - Kanban: `board.md`
    - Nhận biết loại dự án từ field `Type:` trong file, hoặc từ tên file nếu không có field đó
-3. Trích xuất theo schema dưới đây
-4. Ghi output vào `processed/[PROJECT-CODE]/collected-YYYY-MM-DD.md` (tạo folder nếu chưa có)
+4. Trích xuất theo schema dưới đây
+5. Ghi output vào `processed/[PROJECT-CODE]/collected-YYYY-MM-DD.md` (tạo folder nếu chưa có)
 
 ## Schema trích xuất
+
+### PROJECT CONTEXT (từ `project-context.md` — đọc trước, áp dụng cho toàn project)
+
+- **Overview**: mô tả dự án (verbatim)
+- **Goals**: danh sách mục tiêu (verbatim)
+- **Deliverables**: bảng deliverables — ID, tên, mô tả, status
+- **Related Links**: bảng links — loại, tên, URL
+- **Team**: danh sách members, role, allocation %, các project đang làm song song
+- **Timeline**: project start, target delivery, danh sách milestones (tên + date)
+  - Tính `days_to_deadline` = target delivery − hôm nay
+  - Tính `timeline_elapsed_%` = (hôm nay − project start) / (target delivery − project start) × 100
+- **Scope**: số lượng deliverables, original scope (verbatim), acceptance criteria
+- **Constraints**: danh sách verbatim
+
+Nếu không có `project-context.md`: ghi `[NO CONTEXT]` cho toàn bộ section này.
+
+### SPRINT / TRACKING DATA (từ sprint file / project file / board file)
 
 Với mỗi file input, lấy:
 
@@ -62,9 +82,46 @@ Ghi vào `processed/[PROJECT-CODE]/collected-YYYY-MM-DD.md`:
 ## Projects
 
 ### [Tên project/sprint]
+
+#### Project Context
+[CONTEXT AVAILABLE | NO CONTEXT — project-context.md chưa tồn tại]
+
+Overview: [verbatim]
+
+Goals:
+- [verbatim list]
+
+Deliverables:
+| # | Deliverable | Mô tả | Status |
+|---|------------|-------|--------|
+
+Related Links:
+| Loại | Tên | Link |
+|------|-----|------|
+
+Team:
+| Name | Role | Allocation | Also on |
+|------|------|------------|---------|
+
+Timeline:
+- Start: YYYY-MM-DD | Target delivery: YYYY-MM-DD
+- Days to deadline: [N] | Timeline elapsed: [N]%
+- Milestones: [tên]: YYYY-MM-DD, [tên]: YYYY-MM-DD
+
+Scope:
+- Total deliverables: [N]
+- Original scope: [verbatim]
+- Acceptance criteria: [verbatim hoặc link]
+
+Constraints:
+- [verbatim list]
+
+---
+
+#### Sprint / Tracking Data
 Type: [Waterfall | Scrum | Kanban] | Period: [start] → [end hoặc "ongoing"] | Days remaining: [N hoặc "N/A"]
 
-#### Tasks ([total] total)
+##### Tasks ([total] total)
 | ID | Title | Owner | Status | Due | Flags | Notes |
 |----|-------|-------|--------|-----|-------|-------|
 
@@ -73,14 +130,14 @@ Overdue: [N] | Incomplete: [N]
 Current Phase: [phase name hoặc "—" nếu không có]
 Phase distribution: [phase: N tasks, phase: N tasks, ...]
 
-#### Blockers ([N] total)
+##### Blockers ([N] total)
 | Task | Description | Owner | Days open |
 |------|-------------|-------|-----------|
 
-#### Decisions
+##### Decisions
 [verbatim list]
 
-#### Team notes
+##### Team notes
 [verbatim]
 ```
 

@@ -9,13 +9,15 @@ Không cần Claude Code, không cần tool use, không cần memory giữa các
 
 | Card | Dùng khi nào | Attach file |
 |------|-------------|-------------|
+| `init-project.md` | Khởi tạo project mới — tạo project-context.md + tracking file | *(không cần)* |
 | `capture.md` | Có input mới từ Teams / Email / meeting cần lưu lại | tracking file |
 | `daily-check.md` | Sáng sớm, trước standup, muốn biết hôm nay cần làm gì | tracking file(s) |
-| `sprint-report.md` | Cuối tuần / cuối sprint, tạo báo cáo gửi stakeholder | tracking file(s) |
+| `sprint-report.md` | Cuối tuần / cuối sprint, tạo báo cáo gửi stakeholder | tracking file(s) + project-context.md |
 | `gate-check.md` | Trước khi chuyển phase, xem đã đủ điều kiện chưa | tracking file + gates.md |
-| `capy.md` | Phân tích sâu, tìm root cause, đề xuất KPI, coaching delivery | tracking file (+ gates.md / transcript nếu có) |
+| `capy.md` | Phân tích sâu, tìm root cause, đề xuất KPI, coaching delivery | tracking file + project-context.md (+ gates.md / transcript nếu có) |
 
 > **Tracking file** = `project.md` (Waterfall) / `sprint-N.md` (Scrum) / `board.md` (Kanban)
+> **Project context** = `project-context.md` — hồ sơ dự án, nhập 1 lần sau kickoff, dùng chung cho mọi card phân tích
 
 ---
 
@@ -32,6 +34,33 @@ Output ra markdown → paste thẳng lên Confluence hoặc apply vào file loca
 ---
 
 ## Ví dụ thực tế theo kịch bản
+
+---
+
+### Kịch bản 0 — Kickoff project mới, tạo file khởi tạo
+
+**Bối cảnh:** Anh vừa nhận dự án HAYK "Multilang for Hayatoku", Waterfall,
+bắt đầu 2026-03-16, target delivery 2026-04-26. Team gồm Vương (Dev, 100%) và Hoàng (QA, 50%).
+Muốn tạo file để đưa vào delivery-system trước kickoff meeting.
+
+**Cách làm:**
+1. Copy `init-project.md` → paste vào Rakuten AI
+2. Không cần attach file
+3. Gõ thêm:
+```
+Project Code: HAYK
+Tên project: Multilang for Hayatoku
+Loại: Waterfall
+Bắt đầu: 2026-03-16
+Target delivery: 2026-04-26
+Team: Vương (Dev, 100%), Hoàng (QA, 50%)
+```
+
+**Output nhận được:** 2 file sẵn sàng copy-paste:
+- `input/HAYK/project-context.md` — điền sẵn team + timeline, placeholder cho scope/milestones/constraints
+- `input/HAYK/project.md` — tracking file Waterfall với header đầy đủ
+
+**Sau kickoff meeting:** Mở `project-context.md`, điền vào các ô `[cần điền sau kickoff]`.
 
 ---
 
@@ -217,14 +246,20 @@ Kết luận: NO-GO ❌
 ## Workflow thực tế theo ngày
 
 ```
-Sáng:
+Khi nhận dự án mới:
+  └─ init-project.md (không cần attach) → tạo project-context.md + tracking file
+
+Sau kickoff meeting:
+  └─ Mở project-context.md → điền team, milestones, scope, constraints
+
+Sáng (mỗi ngày):
   └─ daily-check.md + tracking file(s) → 5 phút biết focus hôm nay
 
 Trong ngày (mỗi khi có input):
   └─ capture.md + tracking file → 3 phút capture Teams/Email/meeting
 
 Cuối sprint / cuối tuần:
-  └─ sprint-report.md + tracking file(s) → 10 phút tạo report Confluence
+  └─ sprint-report.md + tracking file(s) + project-context.md → 10 phút tạo report Confluence
 
 Trước khi chuyển phase:
   └─ gate-check.md + tracking file + gates.md → 10 phút verify gate

@@ -11,13 +11,15 @@ Hỗ trợ 2 môi trường: **Claude Code** (tự động hóa hoàn toàn) và
 delivery-system/
 │
 ├── input/                          ← Team nhập liệu vào đây
-│   ├── _template.md                   Template tham khảo
-│   └── [PROJECT-CODE]/                1 folder per project (VD: HAYK, AUTH, CL)
-│       ├── project.md                 Tracking file — Waterfall
-│       ├── sprint-N.md                Tracking file — Scrum
-│       ├── board.md                   Tracking file — Kanban
-│       ├── gates.md                   Gate checklist (8 phase transitions)
-│       └── transcript-YYYY-MM-DD.md   Meeting transcript / notes
+│   ├── _template.md                          Template tracking file
+│   ├── _project-context-template.md          Template project context
+│   └── [PROJECT-CODE]/                       1 folder per project (VD: HAYK, AUTH, CL)
+│       ├── project-context.md                Hồ sơ dự án — nhập 1 lần khi kickoff
+│       ├── project.md                        Tracking file — Waterfall
+│       ├── sprint-N.md                       Tracking file — Scrum
+│       ├── board.md                          Tracking file — Kanban
+│       ├── gates.md                          Gate checklist (8 phase transitions)
+│       └── transcript-YYYY-MM-DD.md          Meeting transcript / notes
 │
 ├── processed/                      ← Pipeline tự tạo, không chỉnh tay
 │   └── [PROJECT-CODE]/
@@ -70,7 +72,26 @@ delivery-system/
 
 Toàn bộ data thực tế của dự án được lưu tại đây. Team cập nhật thủ công hoặc qua `/capture`.
 
-**Tracking file** — 1 trong 3 loại tùy mô hình quản lý:
+Mỗi folder project chứa **2 loại file khác nhau về bản chất**:
+
+#### project-context.md — Hồ sơ dự án (nhập 1 lần)
+
+Nền tảng cố định của dự án. Nhập khi kickoff, cập nhật khi có thay đổi lớn (re-plan, thay team, scope change).
+
+| Nội dung | Trả lời câu hỏi |
+|---|---|
+| Team roster (name, role, allocation, project song song) | Ai đang làm? Bao nhiêu % thời gian? |
+| Timeline (start, target delivery, milestones) | Deadline khi nào? Các mốc quan trọng là gì? |
+| Scope (số deliverables, original scope, acceptance criteria) | Cam kết ban đầu là gì? |
+| Constraints (nghỉ phép, dependency, approval gate) | Có ràng buộc nào ảnh hưởng delivery không? |
+
+Pipeline dùng file này để tính `days_to_deadline`, `timeline_elapsed_%`, phát hiện scope creep, và đánh giá risk chính xác hơn. Nếu thiếu file này, các subagent sẽ phân tích "trong bóng tối" — có số nhưng không có ngưỡng để đánh giá.
+
+> **Dễ nhớ:** `project-context.md` = hồ sơ ký khi bắt đầu. `tracking file` = nhật ký thi công hàng ngày.
+
+#### Tracking file — Trạng thái thực tế (cập nhật liên tục)
+
+1 trong 3 loại tùy mô hình quản lý:
 
 | File          | Dùng khi  | Đặc điểm                                                         |
 | ------------- | --------- | ---------------------------------------------------------------- |
@@ -78,7 +99,7 @@ Toàn bộ data thực tế của dự án được lưu tại đây. Team cập
 | `sprint-N.md` | Scrum     | 1 file per sprint, tạo sprint-2.md khi sprint mới bắt đầu        |
 | `board.md`    | Kanban    | 1 file rolling, không có end date, có section Archive            |
 
-**Các file khác trong folder project:**
+#### Các file khác trong folder project
 
 - `gates.md` — checklist 8 gate transitions, điền Pass ✓ trước khi chuyển phase
 - `transcript-*.md/.vtt` — meeting notes hoặc Zoom transcript, pipeline tự parse
@@ -146,11 +167,13 @@ Xem `prompts/README.md` để có hướng dẫn chi tiết và ví dụ thực 
 ### Claude Code (tự động)
 
 ```
-input/[PROJECT]/tracking-file.md
-input/[PROJECT]/transcript-*.md  (nếu có)
+input/[PROJECT]/project-context.md  (hồ sơ dự án — nhập 1 lần)
+input/[PROJECT]/tracking-file.md    (trạng thái hàng ngày)
+input/[PROJECT]/transcript-*.md     (nếu có)
          │
          ▼
   data-collector         →  processed/[P]/collected-*.md
+                             (gồm cả project context + sprint data)
   transcript-parser      →  processed/[P]/meeting-*.md
   meeting-collector      →  merge vào collected-*.md
          │

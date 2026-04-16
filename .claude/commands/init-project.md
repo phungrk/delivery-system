@@ -4,36 +4,88 @@ Khởi tạo một project mới trong delivery-system.
 
 Lấy thông tin từ arguments: `$ARGUMENTS`
 
-Format: `[PROJECT-CODE] "[Tên project]" [YYYY-MM-DD] [YYYY-MM-DD] [waterfall|scrum|kanban]`
+`$ARGUMENTS` có thể ở **2 dạng**:
 
-Ví dụ:
-- `NAVI "eNAVI Redesign" 2026-04-14 2026-06-30 waterfall`
-- `AUTH "Auth Refactor" 2026-04-14 2026-04-28 scrum`
+**Dạng 1 — Structured args (nếu biết đủ thông tin):**
+```
+[PROJECT-CODE] "[Tên project]" [YYYY-MM-DD] [YYYY-MM-DD] [waterfall|scrum|kanban]
+```
+Ví dụ: `NAVI "eNAVI Redesign" 2026-04-14 2026-06-30 waterfall`
 
-Nếu `$ARGUMENTS` trống hoặc thiếu thông tin, hỏi người dùng lần lượt:
-1. Project Code (2–5 ký tự viết hoa, VD: NAVI, AUTH, PAY)
-2. Tên đầy đủ của project
-3. Ngày bắt đầu (YYYY-MM-DD)
-4. Ngày kết thúc (YYYY-MM-DD)
-5. Loại dự án:
-   - `waterfall` — phases tuần tự, 1 file `project.md` cho cả vòng đời
-   - `scrum` — sprint time-boxed, 1 file `sprint-N.md` per sprint
-   - `kanban` — ongoing, 1 file `board.md` rolling
+**Dạng 2 — Nội dung kickoff meeting (raw text, transcript, notes):**
+```
+[bất kỳ nội dung nào từ kickoff meeting — paste thẳng vào]
+```
+Agent sẽ tự trích xuất thông tin project từ nội dung này.
+
+**Nếu `$ARGUMENTS` trống** → hỏi user chọn dạng input trước khi tiếp tục.
 
 ## Các bước thực hiện
 
-### Bước 1 — Validate input
+### Bước 1 — Nhận diện dạng input và trích xuất thông tin
+
+**Nếu là structured args:** parse trực tiếp → PROJECT-CODE, tên, start, end, type.
+
+**Nếu là nội dung kickoff meeting:** đọc toàn bộ và trích xuất các trường sau:
+
+| Trường | Dấu hiệu nhận biết trong meeting |
+|--------|----------------------------------|
+| Project Code | Mã viết tắt, tên viết tắt dự án |
+| Tên project | Tên đầy đủ dự án được nhắc đến |
+| Loại dự án | "sprint", "phase", "kanban", mô hình làm việc |
+| Start date | Ngày bắt đầu, ngày kick-off |
+| Target delivery | Deadline, ngày go-live, ngày bàn giao |
+| Overview | Mô tả dự án, background, context |
+| Goals | Mục tiêu, success criteria, KPIs |
+| Deliverables | Những gì sẽ bàn giao, feature list, scope |
+| Related links | URL, link tài liệu, repo, design, board |
+| Team | Tên người + role + % thời gian nếu có |
+| Milestones | Các mốc quan trọng được nhắc đến |
+| Constraints | Dependency, risk, ràng buộc, nghỉ phép |
+
+Sau khi trích xuất, liệt kê rõ những gì **tìm được** và những gì **không tìm thấy**.
+
+### Bước 2 — Hỏi thông tin còn thiếu
+
+**Thông tin bắt buộc** (không có không tạo được file):
+- Project Code
+- Tên project
+- Ngày bắt đầu
+- Target delivery
+- Loại dự án (waterfall / scrum / kanban)
+
+**Thông tin khuyến nghị** (nên có để pipeline phân tích đúng):
+- Team (ít nhất 1 member)
+- Deliverables (ít nhất 1 mục)
+
+Với mỗi trường **bắt buộc** còn thiếu → hỏi user ngay, không tạo file cho đến khi có đủ.
+Với trường **khuyến nghị** còn thiếu → hỏi gộp 1 lần, cho phép user bỏ qua (sẽ dùng placeholder).
+
+**Format câu hỏi:**
+```
+Tôi cần thêm thông tin để tạo file:
+
+[Bắt buộc — cần trả lời trước khi tiếp tục]
+- Project Code là gì? (2–5 ký tự viết hoa)
+- Loại dự án: waterfall / scrum / kanban?
+
+[Khuyến nghị — có thể bỏ qua, sẽ điền sau]
+- Team gồm những ai? (tên, role, % thời gian)
+- Có milestones nào cần ghi lại không?
+```
+
+### Bước 3 — Validate
 
 - Project Code chỉ gồm chữ cái in hoa và số, 2–5 ký tự
 - Kiểm tra folder `input/[PROJECT-CODE]/` chưa tồn tại — nếu đã có thì báo lỗi và dừng
 - Ngày kết thúc phải sau ngày bắt đầu
 - Loại dự án phải là một trong: `waterfall`, `scrum`, `kanban`
 
-### Bước 2 — Tạo folder
+### Bước 4 — Tạo folder
 
 Tạo: `input/[PROJECT-CODE]/`
 
-### Bước 3 — Tạo tracking file
+### Bước 5 — Tạo tracking file
 
 Tên file và nội dung header thay đổi theo loại dự án:
 
@@ -181,7 +233,51 @@ Format: [YYYY-MM-DD] [[SOURCE]] [tóm tắt] — signal: [TYPE]
 
 ---
 
-### Bước 4 — Copy gate checklist
+### Bước 4 — Tạo project-context.md
+
+Tạo file `input/[PROJECT-CODE]/project-context.md` với nội dung sau:
+
+```markdown
+# Project Context: [Tên project]
+Project Code: [PROJECT-CODE]
+Last updated: [YYYY-MM-DD — ngày tạo]
+
+<!--
+Điền file này sau kickoff meeting.
+Pipeline dùng file này để tính deadline risk, phát hiện scope creep, và phân tích workload.
+Cập nhật khi có re-plan lớn, thay đổi team, hoặc scope change.
+-->
+
+## Team
+
+| Name | Role | Allocation | Also on projects |
+|------|------|------------|-----------------|
+| [Tên] | [Dev / PO / QA / DM / Designer] | [100% / 50% / ...] | [Tên project khác hoặc —] |
+
+## Timeline
+
+- Project start: [YYYY-MM-DD]
+- Target delivery: [YYYY-MM-DD]
+- Key milestones:
+  - [Tên milestone 1]: YYYY-MM-DD
+  - [Tên milestone 2]: YYYY-MM-DD
+
+## Scope
+
+- Total deliverables: [N]
+- Original scope: [1–2 dòng mô tả phạm vi đã cam kết]
+- Acceptance criteria: [tóm tắt hoặc link tài liệu]
+- Out of scope: [những gì KHÔNG thuộc dự án này]
+
+## Constraints
+
+- [VD: dependency vào team X cho API — ETA: YYYY-MM-DD]
+- [VD: cần approval từ stakeholder trước khi deploy]
+```
+
+Điền sẵn `Project start` và `Target delivery` từ arguments đã nhận.
+
+### Bước 5 — Copy gate checklist
 
 Đọc file `gates/pipeline-gates.md` và ghi nội dung đó vào `input/[PROJECT-CODE]/gates.md`.
 
@@ -190,22 +286,25 @@ Lưu ý theo loại dự án:
 - **scrum**: gates áp dụng per sprint hoặc per release, tùy team convention
 - **kanban**: gates áp dụng cho release cycle, không phải sprint
 
-### Bước 5 — Xác nhận
+### Bước 6 — Xác nhận
 
 Báo cho người dùng theo loại dự án:
 
 **Waterfall:**
+- `input/[PROJECT-CODE]/project-context.md` — **điền sau kickoff meeting** (team, milestones, scope, constraints)
 - `input/[PROJECT-CODE]/project.md` — cập nhật Current Phase mỗi khi chuyển phase
 - `input/[PROJECT-CODE]/gates.md` — điền Pass ✓ và Sign-off trước mỗi lần chuyển phase
 - Khi xong, chạy `báo cáo sprint` để pipeline xử lý
 
 **Scrum:**
+- `input/[PROJECT-CODE]/project-context.md` — **điền sau kickoff meeting** (team, milestones, scope, constraints)
 - `input/[PROJECT-CODE]/sprint-1.md` — cập nhật hàng ngày trong sprint
 - Tạo `sprint-2.md` khi bắt đầu sprint mới (copy từ template)
 - `input/[PROJECT-CODE]/gates.md` — dùng cho release gates, không phải mỗi sprint
 - Khi xong, chạy `báo cáo sprint` để pipeline xử lý
 
 **Kanban:**
+- `input/[PROJECT-CODE]/project-context.md` — **điền sau kickoff meeting** (team, milestones, scope, constraints)
 - `input/[PROJECT-CODE]/board.md` — cập nhật liên tục khi có thay đổi
 - `input/[PROJECT-CODE]/gates.md` — dùng trước mỗi release
 - Khi xong, chạy `báo cáo sprint` để pipeline xử lý

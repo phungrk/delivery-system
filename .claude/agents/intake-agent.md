@@ -51,9 +51,32 @@ Dấu hiệu: ai đó cần làm gì đó
 Extract: action cụ thể, owner, deadline (convert sang YYYY-MM-DD nếu tương đối).
 
 ### DECISION
-Dấu hiệu: điều gì đã được chốt, đồng thuận
+Dấu hiệu: điều gì đã được chốt, đồng thuận, **VÀ không cần implementation thêm**.
 - "chốt là...", "thống nhất...", "quyết định...", "ok vậy thì..."
 - Thay đổi plan: "thôi không làm X nữa", "chuyển sang Y"
+
+**Bài kiểm tra bắt buộc — Decision vs Task:**
+Sau khi match keyword "quyết định/chốt/thống nhất", tự hỏi:
+1. Câu này mô tả một LỰA CHỌN đã xong (chọn A thay B) hay một CÔNG VIỆC cần làm tiếp?
+2. Sau phát biểu này, có ai cần ngồi xuống implement/code/design gì không?
+3. Nếu bỏ từ "quyết định" ra khỏi câu, nó có đọc như một task description không?
+
+→ Nếu CẦN implement → phân loại là **ACTION_ITEM**, không phải DECISION.
+→ Nếu chỉ là chọn hướng đi, tool, approach mà không cần thêm action → **DECISION**.
+
+Ví dụ **ĐÚNG LÀ DECISION** (lựa chọn đã xong, không cần làm thêm):
+- "Chốt dùng Google Translate thay DeepL" ✓
+- "Thống nhất không hỗ trợ IE11" ✓
+- "Deadline dời sang 25/4" ✓
+- "Quyết định bỏ feature dark mode khỏi sprint này" ✓
+
+Ví dụ **SAI — thực chất là ACTION_ITEM** (cần ai đó implement):
+- "Quyết định logic flow hiển thị page và modal khi vào trang JP" → cần implement logic flow
+- "Chốt sẽ redesign lại payment flow" → cần ai đó redesign
+- "Thống nhất sẽ viết unit test cho module auth" → cần ai đó viết test
+- "Quyết định refactor API endpoint /users" → cần ai đó refactor
+
+Mẹo nhận diện nhanh: Nếu câu chứa "sẽ [verb]" hoặc mô tả một deliverable cụ thể (logic flow, redesign, viết test, refactor) → gần như chắc chắn là ACTION_ITEM, dù có từ "quyết định" đứng trước.
 
 Extract: nội dung quyết định, người chốt nếu rõ.
 
@@ -72,6 +95,19 @@ Extract: mô tả rủi ro, mức độ (Low/Medium/High dựa vào tone).
 
 ### INFO
 Phần còn lại — context, FYI, thông báo không cần action.
+
+## Bước 2.5 — Xử lý signal kép (Dual Signal)
+
+Một câu có thể chứa CẢ DECISION lẫn ACTION_ITEM. Ví dụ:
+- "Chốt dùng React Query và sẽ migrate toàn bộ API calls sang tuần sau"
+  → DECISION: dùng React Query (thay vì SWR hay Redux)
+  → ACTION_ITEM: migrate toàn bộ API calls, deadline tuần sau
+
+Khi gặp trường hợp này:
+1. Tách thành 2 signal riêng biệt
+2. Ghi DECISION vào `## Decisions`
+3. Ghi ACTION_ITEM vào bảng Tasks
+4. Cả 2 đều ghi vào `## Changelog`
 
 ## Bước 3 — Match với task hiện có
 
@@ -117,8 +153,9 @@ Và cập nhật cột Status của task liên quan thành `Blocked`.
 
 **TẤT CẢ signal** → append vào `## Changelog` (tạo section này nếu chưa có):
 ```
-- [DATE] [[SOURCE]] [tóm tắt 1 dòng] — signal: [TYPE]
+- [DATE] [[SOURCE]] [tóm tắt 1 dòng] — signal: [TYPE] (confidence: high|medium)
 ```
+Ghi `medium` khi câu input chứa keyword của nhiều loại signal (VD: có "quyết định" nhưng cũng mô tả deliverable cụ thể).
 
 ### Nếu section chưa tồn tại trong sprint file
 
@@ -150,3 +187,10 @@ Sau khi ghi xong, báo cho user theo format:
 - **Không tạo task trùng.** Luôn check existing tasks trước khi thêm mới.
 - **Không thay đổi task ID đã có.** Chỉ thêm ID mới với số tiếp theo.
 - **Nếu RAW_TEXT quá ngắn hoặc không có signal nào** → báo cho user, không ghi gì vào file.
+- **Không đoán loại signal khi mơ hồ.** Nếu một câu có thể là DECISION hoặc ACTION_ITEM và bài kiểm tra ở Bước 2 không cho kết quả rõ ràng → KHÔNG tự phân loại. Thay vào đó: ghi vào phần "Không rõ" trong báo cáo kết quả và hỏi user:
+  ```
+  ⚠ Không rõ loại signal:
+  - "[nội dung câu]"
+    → Đây là DECISION (đã chốt xong, không cần làm thêm)?
+    → Hay ACTION_ITEM (cần ai đó implement)?
+  ```
