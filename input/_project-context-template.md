@@ -1,4 +1,4 @@
-# Project Context: [Tên dự án]
+cd # Project Context: [Tên dự án]
 Project Code: [Mã viết tắt, 2–5 ký tự, VD: HAYK, CL, NAVI]
 Last updated: YYYY-MM-DD
 
