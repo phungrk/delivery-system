@@ -12,7 +12,7 @@ Không cần Claude Code, không cần tool use, không cần memory giữa các
 | `init-project.md` | Khởi tạo project mới — tạo project-context.md + tracking file | *(không cần)* |
 | `capture.md` | Có input mới từ Teams / Email / meeting cần lưu lại | tracking file |
 | `daily-check.md` | Sáng sớm, trước standup, muốn biết hôm nay cần làm gì | tracking file(s) |
-| `sprint-report.md` | Cuối tuần / cuối sprint, tạo báo cáo gửi stakeholder | tracking file(s) + project-context.md |
+| `sprint-report.md` | Cuối tuần / cuối sprint, tạo báo cáo gửi stakeholder + sync dashboard | tracking file(s) + project-context.md |
 | `gate-check.md` | Trước khi chuyển phase, xem đã đủ điều kiện chưa | tracking file + gates.md |
 | `capy.md` | Phân tích sâu, tìm root cause, đề xuất KPI, coaching delivery | tracking file + project-context.md (+ gates.md / transcript nếu có) |
 
@@ -30,6 +30,7 @@ Không cần Claude Code, không cần tool use, không cần memory giữa các
 ```
 
 Output ra markdown → paste thẳng lên Confluence hoặc apply vào file local.
+`sprint-report.md` có thêm **Dashboard sync** — output thêm `metrics-*.md` + `insights-*.md` để lưu vào `processed/` → dashboard hiển thị AI insights mà không cần Claude pipeline.
 
 ---
 

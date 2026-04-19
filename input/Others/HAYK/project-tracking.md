@@ -14,10 +14,10 @@ HƯỚNG DẪN:
 
 ## Tasks
 
-| ID | Title | Owner | Status | Due | Notes |
-|----|-------|-------|--------|-----|-------|
-| HAYK-T001 | | | Not Started | | |
-| HAYK-T002 | PO quyết định UX cho trang /en và / (tiếng Anh) | Nio | Not Started | 2026-04-17 | from Teams |
+| ID | Title | Owner | Status | Est.(hrs) | Due | Started | Last Updated | Notes |
+|----|-------|-------|--------|-----------|-----|---------|--------------|-------|
+| HAYK-T001 | | | In Progress | | | 2026-04-19 | 2026-04-19 | |
+| HAYK-T002 | PO quyết định UX cho trang /en và / (tiếng Anh) | Nio | In Progress | | 2026-04-17 | 2026-04-19 | 2026-04-19 | from Teams |
 
 ## Blockers
 
@@ -29,9 +29,12 @@ HƯỚNG DẪN:
 - 2026-04-16: Chốt logic flow hiển thị page và modal khi vào trang tiếng Nhật (/) và trang tiếng Anh (/en) *(source: Teams)*
 - 2026-04-16: Chốt — user vào trang tiếng Nhật tại / lần thứ 2 chưa đồng ý chính sách dịch thuật: nếu url_lang != ja thì giữ nguyên trang / và không hiển thị modal thông báo *(source: Teams)*
 
+## Availability
+
+-
+
 ## Team notes
 
-- 
 - 2026-04-16 [RISK][Medium] Chưa có quyết định UX cho trường hợp user vào /en và vào / theo trang tiếng Anh — cần Product Owner confirm — raised via Teams
 
 ## Changelog

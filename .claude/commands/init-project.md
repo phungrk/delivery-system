@@ -8,9 +8,9 @@ Lấy thông tin từ arguments: `$ARGUMENTS`
 
 **Dạng 1 — Structured args (nếu biết đủ thông tin):**
 ```
-[PROJECT-CODE] "[Tên project]" [YYYY-MM-DD] [YYYY-MM-DD] [waterfall|scrum|kanban]
+[Domain] [PROJECT-CODE] "[Tên project]" [YYYY-MM-DD] [YYYY-MM-DD] [waterfall|scrum|scrum-p|kanban]
 ```
-Ví dụ: `NAVI "eNAVI Redesign" 2026-04-14 2026-06-30 waterfall`
+Ví dụ: `eNV NAVI "eNAVI Redesign" 2026-04-14 2026-06-30 waterfall`
 
 **Dạng 2 — Nội dung kickoff meeting (raw text, transcript, notes):**
 ```
@@ -32,7 +32,7 @@ Agent sẽ tự trích xuất thông tin project từ nội dung này.
 |--------|----------------------------------|
 | Project Code | Mã viết tắt, tên viết tắt dự án |
 | Tên project | Tên đầy đủ dự án được nhắc đến |
-| Loại dự án | "sprint", "phase", "kanban", mô hình làm việc |
+| Loại dự án | "sprint", "phase", "kanban", "tham gia scrum team", mô hình làm việc |
 | Start date | Ngày bắt đầu, ngày kick-off |
 | Target delivery | Deadline, ngày go-live, ngày bàn giao |
 | Overview | Mô tả dự án, background, context |
@@ -48,6 +48,7 @@ Sau khi trích xuất, liệt kê rõ những gì **tìm được** và những 
 ### Bước 2 — Hỏi thông tin còn thiếu
 
 **Thông tin bắt buộc** (không có không tạo được file):
+- Domain (CA | eNV | Corp | Others)
 - Project Code
 - Tên project
 - Ngày bắt đầu
@@ -61,13 +62,21 @@ Sau khi trích xuất, liệt kê rõ những gì **tìm được** và những 
 Với mỗi trường **bắt buộc** còn thiếu → hỏi user ngay, không tạo file cho đến khi có đủ.
 Với trường **khuyến nghị** còn thiếu → hỏi gộp 1 lần, cho phép user bỏ qua (sẽ dùng placeholder).
 
+**Khi loại dự án là `scrum`** → hỏi thêm 1 câu bắt buộc:
+```
+Team bạn quản lý toàn bộ sprint, hay tham gia với tư cách FE team trong scrum team lớn hơn?
+- "full" → scrum (quản lý sprint, có sprint goal, velocity toàn team)
+- "participation" → scrum-p (chỉ track phần FE đã commit, dependency từ backend)
+```
+
 **Format câu hỏi:**
 ```
 Tôi cần thêm thông tin để tạo file:
 
 [Bắt buộc — cần trả lời trước khi tiếp tục]
+- Domain: CA / eNV / Corp / Others?
 - Project Code là gì? (2–5 ký tự viết hoa)
-- Loại dự án: waterfall / scrum / kanban?
+- Loại dự án: waterfall / scrum / scrum-p / kanban?
 
 [Khuyến nghị — có thể bỏ qua, sẽ điền sau]
 - Team gồm những ai? (tên, role, % thời gian)
@@ -76,22 +85,23 @@ Tôi cần thêm thông tin để tạo file:
 
 ### Bước 3 — Validate
 
+- Domain phải là một trong: `CA`, `eNV`, `Corp`, `Others`
 - Project Code chỉ gồm chữ cái in hoa và số, 2–5 ký tự
-- Kiểm tra folder `input/[PROJECT-CODE]/` chưa tồn tại — nếu đã có thì báo lỗi và dừng
+- Kiểm tra folder `input/[Domain]/[PROJECT-CODE]/` chưa tồn tại — nếu đã có thì báo lỗi và dừng
 - Ngày kết thúc phải sau ngày bắt đầu
-- Loại dự án phải là một trong: `waterfall`, `scrum`, `kanban`
+- Loại dự án phải là một trong: `waterfall`, `scrum`, `scrum-p`, `kanban`
 
 ### Bước 4 — Tạo folder
 
-Tạo: `input/[PROJECT-CODE]/`
+Tạo: `input/[Domain]/[PROJECT-CODE]/`
 
 ### Bước 5 — Tạo tracking file
 
-Tên file và nội dung header thay đổi theo loại dự án:
+Tất cả loại dự án đều tạo file tên `project-tracking.md`. Nội dung header thay đổi theo loại:
 
 ---
 
-#### Nếu là `waterfall` → tạo `project.md`
+#### Nếu là `waterfall` → tạo `project-tracking.md`
 
 ```markdown
 # Project: [Tên project]
@@ -183,7 +193,67 @@ Format: [YYYY-MM-DD] [[SOURCE]] [tóm tắt] — signal: [TYPE]
 
 ---
 
-#### Nếu là `kanban` → tạo `board.md`
+#### Nếu là `scrum-p` → tạo `sprint-1.md`
+
+```markdown
+# Sprint 1 — [Tên project] · FE
+Project Code: [PROJECT-CODE]
+Type: Scrum-P
+Sprint: [YYYY-MM-DD] → [YYYY-MM-DD]
+FE Committed Hours: [N]h
+
+<!--
+HƯỚNG DẪN:
+- File này track phần việc của FE team trong sprint của scrum team lớn hơn
+- Không quản lý toàn bộ sprint — chỉ quản lý tasks FE team đã commit trong sprint planning
+- Task ID dùng format [PROJECT-CODE]-T001, VD: [PROJECT-CODE]-T001
+- Cập nhật Status, Started, Last Updated hàng ngày
+- Điền Sprint Summary vào ngày cuối sprint
+- Blocked by: ghi rõ dependency — "API /users (backend)", "Design mockup (designer)"
+- Status chỉ dùng: Done | In Progress | Not Started | Blocked
+-->
+
+## Tasks (FE)
+
+| ID | Title | Owner | Status | Est.(hrs) | Due | Started | Last Updated | Blocked by |
+|----|-------|-------|--------|-----------|-----|---------|--------------|------------|
+| [PROJECT-CODE]-T001 | | | Not Started | | | | | |
+
+## Blockers
+
+| Task ID | Mô tả | Type | Since | Raised to | Status |
+|---------|-------|------|-------|-----------|--------|
+
+## Decisions
+
+- N/A
+
+## Availability
+
+-
+
+## Sprint Summary
+
+| | Plan | Actual |
+|---|---|---|
+| Committed tasks | | |
+| Delivered (Done) | | |
+| Carried over | | |
+| FE hours committed | h | |
+| FE hours actual | | h |
+| Blocked hours | | h |
+
+## Changelog
+
+<!--
+Audit trail tự động — intake-agent ghi vào đây mỗi khi có /capture.
+Format: [YYYY-MM-DD] [[SOURCE]] [tóm tắt] — signal: [TYPE]
+-->
+```
+
+---
+
+#### Nếu là `kanban` → tạo `project-tracking.md`
 
 ```markdown
 # Board: [Tên project]
@@ -291,20 +361,28 @@ Lưu ý theo loại dự án:
 Báo cho người dùng theo loại dự án:
 
 **Waterfall:**
-- `input/[PROJECT-CODE]/project-context.md` — **điền sau kickoff meeting** (team, milestones, scope, constraints)
-- `input/[PROJECT-CODE]/project.md` — cập nhật Current Phase mỗi khi chuyển phase
+- `input/[Domain]/[PROJECT-CODE]/project-context.md` — **điền sau kickoff meeting** (team, milestones, scope, constraints)
+- `input/[Domain]/[PROJECT-CODE]/project-tracking.md` — cập nhật Current Phase mỗi khi chuyển phase
 - `input/[PROJECT-CODE]/gates.md` — điền Pass ✓ và Sign-off trước mỗi lần chuyển phase
 - Khi xong, chạy `báo cáo sprint` để pipeline xử lý
 
 **Scrum:**
-- `input/[PROJECT-CODE]/project-context.md` — **điền sau kickoff meeting** (team, milestones, scope, constraints)
-- `input/[PROJECT-CODE]/sprint-1.md` — cập nhật hàng ngày trong sprint
+- `input/[Domain]/[PROJECT-CODE]/project-context.md` — **điền sau kickoff meeting** (team, milestones, scope, constraints)
+- `input/[Domain]/[PROJECT-CODE]/sprint-1.md` — cập nhật hàng ngày trong sprint
 - Tạo `sprint-2.md` khi bắt đầu sprint mới (copy từ template)
-- `input/[PROJECT-CODE]/gates.md` — dùng cho release gates, không phải mỗi sprint
+- `input/[Domain]/[PROJECT-CODE]/gates.md` — dùng cho release gates, không phải mỗi sprint
+- Khi xong, chạy `báo cáo sprint` để pipeline xử lý
+
+**Scrum-P:**
+- `input/[Domain]/[PROJECT-CODE]/project-context.md` — điền thông tin FE team, allocation, constraints
+- `input/[Domain]/[PROJECT-CODE]/sprint-1.md` — cập nhật hàng ngày: Status, Blockers
+- Tạo `sprint-2.md` khi bắt đầu sprint mới (copy từ `_template-scrum-participation.md`)
+- Điền `Sprint Summary` vào ngày cuối sprint
+- Không cần `gates.md` — gates thuộc scrum team lớn quản lý
 - Khi xong, chạy `báo cáo sprint` để pipeline xử lý
 
 **Kanban:**
-- `input/[PROJECT-CODE]/project-context.md` — **điền sau kickoff meeting** (team, milestones, scope, constraints)
-- `input/[PROJECT-CODE]/board.md` — cập nhật liên tục khi có thay đổi
-- `input/[PROJECT-CODE]/gates.md` — dùng trước mỗi release
+- `input/[Domain]/[PROJECT-CODE]/project-context.md` — **điền sau kickoff meeting** (team, milestones, scope, constraints)
+- `input/[Domain]/[PROJECT-CODE]/project-tracking.md` — cập nhật liên tục khi có thay đổi
+- `input/[Domain]/[PROJECT-CODE]/gates.md` — dùng trước mỗi release
 - Khi xong, chạy `báo cáo sprint` để pipeline xử lý

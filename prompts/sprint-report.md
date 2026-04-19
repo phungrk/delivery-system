@@ -17,15 +17,18 @@ Ngày hôm nay: **[người dùng điền ngày hôm nay, VD: 2026-04-12]**
 ## Metrics chung (áp dụng cho tất cả loại)
 
 **Completion:**
+
 - Completion rate = Done / Total × 100%
 - Overdue rate = tasks có Due < hôm nay và status ≠ Done / Total × 100%
 - Block rate = Blocked / Total × 100%
 
 **Workload:**
+
 - Mỗi owner: tổng tasks, In Progress, Done, Blocked
 - Flag OVERLOADED nếu 1 người có > 3 task In Progress
 
 **Risk score (0–10):**
+
 - +2 nếu completion rate < 50% và đã qua > 50% thời gian (không áp dụng Kanban)
 - +2 nếu có blocker > 3 ngày chưa resolve
 - +1 cho mỗi overdue task (tối đa +3)
@@ -40,18 +43,21 @@ Ngày hôm nay: **[người dùng điền ngày hôm nay, VD: 2026-04-12]**
 ### Waterfall (`project.md`)
 
 **Phase progress:**
+
 - Với mỗi phase có task: Done / Total trong phase × 100%
 - Phase hiện tại (từ `Current Phase`): completion rate riêng
 - PHASE_LEAK: có task phase trước chưa Done không?
 - Projected: nếu phase hiện tại đang ở X% completion sau Y ngày → ước tính còn bao lâu
 
 **Gate readiness:**
+
 - Đọc section Decisions và Blockers để đánh giá sơ bộ gate hiện tại
 - Ghi chú nếu có dấu hiệu chưa đủ điều kiện chuyển phase
 
 ### Scrum (`sprint-*.md`)
 
 **Sprint progress:**
+
 - Sprint progress: (hôm nay - start) / (end - start) × 100%
 - So sánh completion rate vs. sprint progress → đang ahead / on-track / behind
 - Projected completion: nếu X% done sau Y% sprint → dự kiến done ngày nào
@@ -59,6 +65,7 @@ Ngày hôm nay: **[người dùng điền ngày hôm nay, VD: 2026-04-12]**
 ### Kanban (`board.md`)
 
 **Flow metrics:**
+
 - WIP hiện tại: số task In Progress
 - Throughput (nếu có Changelog): số task Done trong 7 ngày qua
 - Oldest In Progress: task nào đang làm lâu nhất
@@ -249,6 +256,90 @@ Tạo report riêng cho từng project theo format trên, sau đó thêm Executi
 - Không làm tròn — chính xác 1 chữ số thập phân
 - Lời khuyên phải cụ thể: tên người + hành động, không phải "team cần tập trung"
 - Nếu thiếu data để tính metric → ghi "N/A — cần cập nhật tracking file"
+
+---
+
+## Dashboard sync (tùy chọn)
+
+Sau khi tạo báo cáo Confluence, output thêm 2 file để lưu vào `processed/[Domain]/[PROJECT-CODE]/` — giúp dashboard hiển thị insights mà không cần chạy Claude pipeline.
+
+Tên file: `metrics-[hôm nay].md` và `insights-[hôm nay].md`
+
+### metrics-[hôm nay].md
+
+```
+# Metrics — [hôm nay]
+
+## Source
+- [tên tracking file]
+- [Tên project] | Period: [start] → [end] | Days elapsed: [N] / [total] | Days remaining: [N]
+
+## Completion
+| Metric | Value |
+|--------|-------|
+| Completion rate | X.X% |
+| On-track rate | X.X% |
+| Overdue rate | X.X% |
+| Block rate | X.X% |
+
+[Nếu có flag nghiêm trọng: > FLAG: [mô tả ngắn]]
+
+## Workload by owner
+| Owner | Total | In Progress | Done | Blocked | Flag |
+|-------|-------|-------------|------|---------|------|
+| [tên] | N | N | N | N | — hoặc OVERLOADED |
+
+## Blockers
+- Total active: N
+- Avg age: N ngày hoặc N/A
+- Oldest: [task ID] — N ngày hoặc N/A
+- Most blocked owner: [tên] hoặc N/A
+
+## Risk score: N/10 — [Low/Medium/High/Critical]
+
+### Score breakdown
+- [+N] [lý do]
+- [+N] [lý do]
+
+Total: N
+```
+
+### insights-[hôm nay].md
+
+```
+# Insights — [hôm nay]
+
+## Tình hình tổng thể
+[2–4 câu narrative tổng quan tình hình project, highlight vấn đề chính]
+
+## Tín hiệu rủi ro
+
+🔴 CRITICAL — [mô tả vấn đề nghiêm trọng, bằng chứng từ data] — [hành động cụ thể cần làm]
+
+🟡 WARNING — [mô tả cảnh báo, bằng chứng] — [hành động]
+
+🔵 INFO — [thông tin cần chú ý nhưng chưa phải rủi ro]
+
+[Chỉ output các mức có tín hiệu thực sự — bỏ qua nếu không có]
+
+## Hành động đề xuất
+
+-> [Hành động cụ thể] — Người thực hiện: [tên] — Ưu tiên: High/Medium/Low — Liên quan: [task ID]
+
+## Điểm tích cực
+
+- [Điều đang đi đúng hướng, có bằng chứng từ data]
+
+## Câu hỏi cho standup
+
+1. [Tên]: [câu hỏi cụ thể liên quan đến task đang block hoặc chậm]
+2. [Tên]: [câu hỏi về tiến độ task cụ thể]
+```
+
+**Cách lưu:**
+1. Copy nội dung `metrics-[hôm nay].md` → save vào `processed/[Domain]/[PROJECT-CODE]/metrics-[hôm nay].md`
+2. Copy nội dung `insights-[hôm nay].md` → save vào `processed/[Domain]/[PROJECT-CODE]/insights-[hôm nay].md`
+3. Dashboard tự động hiển thị khi refresh
 
 ---
 

@@ -20,25 +20,31 @@ delivery-system/
 │   └── capy.md                 ← senior delivery manager: phân tích sâu, coaching, cải tiến hệ thống
 ├── input/
 │   ├── _template.md            ← template sprint cho team nhập liệu
-│   └── [PROJECT-CODE]/         ← 1 folder per project (VD: CL/, NAVI/, AUTH/)
-│       ├── sprint-*.md         ← file sprint của project
-│       └── transcript-YYYY-MM-DD.vtt/.txt  ← Zoom transcript
+│   └── [Domain]/               ← domain nhóm dự án (CA, eNV, Corp, Others)
+│       └── [PROJECT-CODE]/     ← 1 folder per project (VD: eNV/CL/, Others/HAYK/)
+│           ├── project-tracking.md  ← tracking file của project
+│           ├── timelog.md      ← time log riêng biệt (auto-managed)
+│           └── transcript-YYYY-MM-DD.vtt/.txt
 ├── processed/
-│   └── [PROJECT-CODE]/         ← auto-generated, cùng cấu trúc với input
-│       ├── collected-YYYY-MM-DD.md
-│       ├── meeting-YYYY-MM-DD.md
-│       ├── metrics-YYYY-MM-DD.md
-│       └── insights-YYYY-MM-DD.md
+│   └── [Domain]/               ← cùng cấu trúc với input
+│       └── [PROJECT-CODE]/
+│           ├── collected-YYYY-MM-DD.md
+│           ├── meeting-YYYY-MM-DD.md
+│           ├── metrics-YYYY-MM-DD.md
+│           └── insights-YYYY-MM-DD.md
 ├── gates/
-│   └── pipeline-gates.md       ← gate checklist cho 8 phase transitions (copy vào input/[PROJECT-CODE]/ khi dùng)
+│   └── pipeline-gates.md       ← gate checklist cho 8 phase transitions
 └── output/
     ├── reports/
-    │   ├── [PROJECT-CODE]/     ← sprint report, track report per project
-    │   └── YYYY-MM-DD-executive-summary.md  ← tổng quan tất cả projects
+    │   ├── [Domain]/
+    │   │   └── [PROJECT-CODE]/ ← sprint report per project
+    │   └── YYYY-MM-DD-executive-summary.md
     ├── alerts/
-    │   └── [PROJECT-CODE]/     ← risk alert per project
+    │   └── [Domain]/
+    │       └── [PROJECT-CODE]/ ← risk alert per project
     └── meetings/
-        └── [PROJECT-CODE]/     ← meeting minutes per project
+        └── [Domain]/
+            └── [PROJECT-CODE]/ ← meeting minutes per project
 ```
 
 ---
@@ -56,12 +62,12 @@ Phân loại yêu cầu vào 1 trong 4 loại:
 
 ### Bước 2 — Thu thập input
 - Nếu yêu cầu là **MEETING**: chạy theo thứ tự:
-  1. `transcript-parser` → đọc `input/transcript-*.vtt` hoặc `input/transcript-*.txt`, tạo meeting minute vào `output/meetings/` và structured data vào `processed/meeting-YYYY-MM-DD.md`. Truyền ngày hôm nay để convert deadline tương đối.
-  2. `meeting-collector` → merge `processed/meeting-*.md` vào `processed/collected-*.md`
+  1. `transcript-parser` → đọc `input/[Domain]/[CODE]/transcript-*.vtt/.txt`, tạo meeting minute vào `output/meetings/[Domain]/[CODE]/` và structured data vào `processed/[Domain]/[CODE]/meeting-YYYY-MM-DD.md`. Truyền ngày hôm nay để convert deadline tương đối.
+  2. `meeting-collector` → merge `processed/[Domain]/[CODE]/meeting-*.md` vào `processed/[Domain]/[CODE]/collected-*.md`
   3. Tiếp tục từ Bước 3 (metrics → insights → report)
-- Các loại khác: dùng subagent `data-collector` để đọc tất cả subfolder trong `input/`.
+- Các loại khác: dùng subagent `data-collector` để đọc tất cả `input/[Domain]/[PROJECT-CODE]/`.
 - Truyền ngày hôm nay vào prompt của subagent.
-- Mỗi project có folder riêng: `input/[PROJECT-CODE]/`, `processed/[PROJECT-CODE]/`, `output/*/[PROJECT-CODE]/`.
+- Mỗi project có folder riêng: `input/[Domain]/[CODE]/`, `processed/[Domain]/[CODE]/`, `output/*/[Domain]/[CODE]/`.
 
 ### Bước 3 — Tính metrics
 Dùng subagent `metrics-analyzer` với output từ bước 2.
@@ -71,8 +77,8 @@ Dùng subagent `insight-generator` với output từ bước 2 và 3.
 
 ### Bước 5 — Tạo output
 Dùng subagent `reporter` để format kết quả.
-- Lưu báo cáo vào `output/reports/[PROJECT-CODE]/YYYY-MM-DD-sprint-report.md`
-- Lưu cảnh báo vào `output/alerts/[PROJECT-CODE]/YYYY-MM-DD-alert.md`
+- Lưu báo cáo vào `output/reports/[Domain]/[CODE]/YYYY-MM-DD-sprint-report.md`
+- Lưu cảnh báo vào `output/alerts/[Domain]/[CODE]/YYYY-MM-DD-alert.md`
 - Nếu có từ 2 projects: tự động tạo thêm `output/reports/YYYY-MM-DD-executive-summary.md`
 
 ### Bước 6 — Xác nhận

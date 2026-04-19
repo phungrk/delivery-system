@@ -93,6 +93,23 @@ Dấu hiệu: lo ngại chưa thành blocker
 
 Extract: mô tả rủi ro, mức độ (Low/Medium/High dựa vào tone).
 
+### TIME_LOG
+Dấu hiệu: khai báo giờ làm thực tế cho task cụ thể
+- "[N]h", "[N] tiếng", "[N] giờ", "mất [N]h", "làm [N]h", "spent [N]h"
+- Có kèm task ID hoặc tên task
+- Thường xuất hiện theo nhóm: "T001 3h, T002 2h"
+
+Ưu tiên nhận diện TIME_LOG **trước** STATUS_UPDATE khi câu chứa cả hai (VD: "xong T001 mất 4h" → TIME_LOG + STATUS_UPDATE).
+
+Extract:
+- `owner`: người khai báo (lấy từ context hoặc hỏi nếu không rõ)
+- `task_id`: match với task ID hiện có trong file
+- `hours`: số giờ (số thực, VD: 0.5, 1, 3, 8)
+- `note`: phần mô tả còn lại nếu có
+- `date`: DATE từ input header
+
+Nếu 1 câu khai báo nhiều task → tạo nhiều entries riêng biệt.
+
 ### INFO
 Phần còn lại — context, FYI, thông báo không cần action.
 
@@ -122,7 +139,18 @@ Với mỗi signal có task reference:
 
 **Chỉ append, không xóa.** Không được xóa hoặc overwrite nội dung cũ.
 
-**STATUS_UPDATE** → cập nhật cột Status trong bảng Tasks (tìm đúng dòng theo ID hoặc match)
+**TIME_LOG** → append dòng mới vào bảng `## Time Log` (tạo section nếu chưa có):
+```
+| [DATE] | [owner] | [task_id] | [hours] | [note] |
+```
+Nếu signal là TIME_LOG + STATUS_UPDATE (VD: "xong T001 mất 4h"):
+- Append Time Log entry trước
+- Sau đó cập nhật Status trong bảng Tasks
+- Nếu status → Done: điền `Last Updated` = DATE
+
+**STATUS_UPDATE** → cập nhật cột Status trong bảng Tasks (tìm đúng dòng theo ID hoặc match).
+Khi status chuyển sang `In Progress` và cột `Started` đang trống → điền `Started` = DATE.
+Khi status chuyển sang `Done` → điền `Last Updated` = DATE.
 
 **ACTION_ITEM** (new task) → thêm dòng mới vào cuối bảng Tasks:
 ```
@@ -169,6 +197,7 @@ Sau khi ghi xong, báo cho user theo format:
 ✓ Captured [N] signals từ [SOURCE] ([DATE])
   Ghi vào: input/[PROJECT_CODE]/sprint-*.md
 
+  TIME_LOG      : [owner] / [task ID] / [hours]h / [note]
   STATUS_UPDATE : [task ID] → [status mới]
   ACTION_ITEM   : [owner] / [action] / due [date]
   DECISION      : [tóm tắt quyết định]
