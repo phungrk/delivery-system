@@ -2,7 +2,21 @@
   "permissions": {
     "allow": [
       "Bash(npm run *)",
-      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:3000/resource)"
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:3000/resource)",
+      "Bash(python3 -c ' *)",
+      "Bash(python3 -c \"import json,sys; d=json.load\\(sys.stdin\\); deps={**d.get\\('dependencies',{}\\), **d.get\\('devDependencies',{}\\)}; print\\('\\\\n'.join\\(f'{k}: {v}' for k,v in sorted\\(deps.items\\(\\)\\)\\)\\)\")",
+      "Bash(npx tsc *)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:3000/v2)",
+      "Bash(curl -s http://localhost:3000/v2)",
+      "Bash(node -e ' *)",
+      "Bash(node --experimental-require-module -e ' *)",
+      "Bash(lsof -ti:3000)",
+      "Bash(echo \"PID: $!\")",
+      "Bash(curl -s http://localhost:3000/api/projects)",
+      "Read(//private/tmp/**)",
+      "Bash(python3 -c \"import sys; d = sys.stdin.read\\(\\); print\\('AMTK found' if 'AMTK' in d else 'no AMTK'\\); print\\('Japanese found' if '自動配信' in d else 'no Japanese'\\)\")",
+      "Bash(./node_modules/.bin/tsc --noEmit)",
+      "Bash(node)"
     ]
   }
 }

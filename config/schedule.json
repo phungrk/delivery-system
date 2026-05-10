@@ -1,0 +1,33 @@
+{
+  "_comment": "Cấu hình lịch gửi báo cáo tự động. Cron format: minute hour day month weekday",
+  "daily": {
+    "enabled": true,
+    "cron": "30 8 * * 1-5",
+    "time": "08:30",
+    "days": "Mon-Fri",
+    "description": "Daily standup report gửi mỗi sáng thứ 2-6",
+    "channel": "team",
+    "report_type": "daily",
+    "title": "Daily Standup"
+  },
+  "weekly_team": {
+    "enabled": true,
+    "cron": "0 17 * * 5",
+    "time": "17:00",
+    "day": "Friday",
+    "description": "Weekly sprint report gửi team vào chiều thứ 6",
+    "channel": "team",
+    "report_type": "weekly_team",
+    "title": "Weekly Sprint Report"
+  },
+  "weekly_exec": {
+    "enabled": true,
+    "cron": "0 9 * * 1",
+    "time": "09:00",
+    "day": "Monday",
+    "description": "Weekly executive summary gửi stakeholders vào sáng thứ 2",
+    "channel": "stakeholder",
+    "report_type": "weekly_exec",
+    "title": "Portfolio Update"
+  }
+}

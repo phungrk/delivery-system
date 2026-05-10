@@ -1,7 +1,7 @@
 ---
 name: data-collector
 description: Đọc và chuẩn hóa file markdown input từ team. Dùng khi cần trích xuất data từ input/ trước khi phân tích.
-tools: Read, Glob, Grep
+tools: Read, Glob, Grep, Write
 model: haiku
 ---
 
@@ -28,6 +28,8 @@ Không phân tích, không đưa ra nhận xét — chỉ đọc và chuẩn hó
 
 ### PROJECT CONTEXT (từ `project-context.md` — đọc trước, áp dụng cho toàn project)
 
+- **Delivery Model**: trích xuất field `Delivery Model` (full-cycle | co-sprint | sprint-handover). Nếu không có → ghi `full-cycle` làm default
+- **Team DoD**: trích xuất field `Team DoD` nếu có
 - **Overview**: mô tả dự án (verbatim)
 - **Goals**: danh sách mục tiêu (verbatim)
 - **Deliverables**: bảng deliverables — ID, tên, mô tả, status
@@ -39,7 +41,7 @@ Không phân tích, không đưa ra nhận xét — chỉ đọc và chuẩn hó
 - **Scope**: số lượng deliverables, original scope (verbatim), acceptance criteria
 - **Constraints**: danh sách verbatim
 
-Nếu không có `project-context.md`: ghi `[NO CONTEXT]` cho toàn bộ section này.
+Nếu không có `project-context.md`: ghi `[NO CONTEXT]` cho toàn bộ section này, Delivery Model default = `full-cycle`.
 
 ### SPRINT / TRACKING DATA (từ sprint file / project file / board file)
 
@@ -53,7 +55,11 @@ Với mỗi file input, lấy:
 - Current Phase (nếu có field này trong file)
 
 **TASKS** — mỗi dòng trong bảng task:
-- ID, title, owner, phase (nếu có cột Phase), status, due date, notes
+- ID, title, type, owner, unit, phase (nếu có cột Phase), status, due date, notes
+- `type` là một trong: `comm | doc | dev | review | ops | research | decision`. Nếu cột Type không tồn tại hoặc ô trống → ghi `dev` làm default và flag `NO_TYPE`
+- `unit`: trích xuất từ cột `Unit` trong sprint file nếu có. Nếu không có cột Unit → suy ra theo rule:
+  - Owner là Phung, Vuong, hoặc Hoang → unit = `RFV/CWD`
+  - Owner khác (hoặc [unclear]) → unit = `[unknown]`, flag `NO_UNIT`
 - Flag `OVERDUE` nếu due date < hôm nay và status != Done
 - Flag `INCOMPLETE` nếu thiếu owner hoặc status
 - Flag `NO_PHASE` nếu cột Phase tồn tại nhưng ô đó trống
@@ -85,6 +91,9 @@ Ghi vào `processed/[PROJECT-CODE]/collected-YYYY-MM-DD.md`:
 
 #### Project Context
 [CONTEXT AVAILABLE | NO CONTEXT — project-context.md chưa tồn tại]
+
+Delivery Model: [full-cycle | co-sprint | sprint-handover]
+Team DoD: [verbatim hoặc "—" nếu không có]
 
 Overview: [verbatim]
 
@@ -122,8 +131,8 @@ Constraints:
 Type: [Waterfall | Scrum | Kanban] | Period: [start] → [end hoặc "ongoing"] | Days remaining: [N hoặc "N/A"]
 
 ##### Tasks ([total] total)
-| ID | Title | Owner | Status | Due | Flags | Notes |
-|----|-------|-------|--------|-----|-------|-------|
+| ID | Title | Type | Owner | Unit | Status | Due | Flags | Notes |
+|----|-------|------|-------|------|--------|-----|-------|-------|
 
 Done: [N] | In Progress: [N] | Not Started: [N] | Blocked: [N]
 Overdue: [N] | Incomplete: [N]

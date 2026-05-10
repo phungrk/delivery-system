@@ -1,0 +1,2 @@
+=== Daily Pipeline START: Sat Apr 25 09:15:13 +07 2026 ===
+ERROR: /Users/phungnguyen/Downloads/delivery-system/config/channels.env không tồn tại. Chạy: cp config/channels.env.example config/channels.env

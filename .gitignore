@@ -1,0 +1,11 @@
+# Webhook URLs - KHÔNG commit file này lên git
+config/channels.env
+
+# Archives
+*.zip
+
+# macOS
+.DS_Store
+input/
+processed/
+output/

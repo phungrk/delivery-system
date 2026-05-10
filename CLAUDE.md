@@ -17,7 +17,19 @@ delivery-system/
 │   ├── metrics-analyzer.md     ← subagent 4: tính chỉ số
 │   ├── insight-generator.md    ← subagent 5: phân tích & đề xuất
 │   ├── reporter.md             ← subagent 6: tạo output markdown
+│   ├── teams-sender.md         ← subagent 7: format report → Teams MessageCard JSON
 │   └── capy.md                 ← senior delivery manager: phân tích sâu, coaching, cải tiến hệ thống
+├── config/
+│   ├── schedule.json           ← lịch gửi báo cáo (cron expression, enable/disable)
+│   ├── channels.env            ← Teams webhook URLs (KHÔNG commit — xem .gitignore)
+│   └── channels.env.example    ← template để setup channels.env
+├── scripts/
+│   ├── run-daily.sh            ← pipeline daily report → Teams (Team channel)
+│   ├── run-weekly-team.sh      ← pipeline weekly report → Teams (Team channel)
+│   ├── run-weekly-exec.sh      ← pipeline executive summary → Teams (Stakeholder channel)
+│   ├── send-to-teams.py        ← HTTP POST payload JSON lên Teams webhook
+│   └── setup-cron.sh           ← cài đặt crontab từ schedule.json
+├── logs/                       ← log files từ cron jobs (auto-created)
 ├── input/
 │   ├── _template.md            ← template sprint cho team nhập liệu
 │   └── [Domain]/               ← domain nhóm dự án (CA, eNV, Corp, Others)
@@ -96,6 +108,67 @@ Báo cho người dùng file đã được tạo ở đâu.
 | "cập nhật input" | Hướng dẫn người dùng dùng `input/_template.md` |
 | "dự báo deadline" | Chạy full pipeline, focus vào velocity và projected completion |
 | "tổng hợp meeting" | Chạy transcript-parser → meeting-collector → merge vào sprint → full pipeline |
+| "gửi báo cáo Teams" | Chạy pipeline → teams-sender → POST lên Teams (cần channels.env) |
+| "test gửi daily" | Chạy pipeline daily + format Teams payload + hỏi confirm trước khi POST |
+
+---
+
+## Luồng tự động gửi Teams
+
+### Cấu trúc pipeline Teams
+
+```
+[cron / /schedule]
+       │
+       ▼
+run-daily.sh / run-weekly-team.sh / run-weekly-exec.sh
+       │
+       ├─[1]─ claude --print "báo cáo sprint..." → tạo report files
+       ├─[2]─ claude --print "format Teams payload..." → teams-sender agent
+       │                                                  └─ ghi processed/teams-payload-*.json
+       └─[3]─ python3 send-to-teams.py <payload> <webhook_url>
+                └─ HTTP POST → Teams Incoming Webhook
+```
+
+### Cách bật/tắt từng loại báo cáo
+
+Sửa `config/schedule.json` → đổi `"enabled": true/false` → chạy lại `bash scripts/setup-cron.sh`
+
+### Cách thay đổi giờ gửi
+
+Sửa `"cron"` trong `config/schedule.json` → chạy lại `bash scripts/setup-cron.sh`
+
+Ví dụ cron:
+- `"30 8 * * 1-5"` = 08:30 thứ 2–6
+- `"0 9 * * 1"` = 09:00 thứ 2
+- `"0 17 * * 5"` = 17:00 thứ 6
+
+### Test nhanh trước khi cài cron
+
+```bash
+# Test gửi daily (1 lần)
+bash scripts/run-daily.sh
+
+# Test gửi weekly team
+bash scripts/run-weekly-team.sh
+
+# Test gửi weekly exec (stakeholders)
+bash scripts/run-weekly-exec.sh
+```
+
+### Setup cron tự động
+
+```bash
+# Bước 1: Copy và điền webhook URLs
+cp config/channels.env.example config/channels.env
+# → Sửa TEAMS_WEBHOOK_TEAM và TEAMS_WEBHOOK_STAKEHOLDER
+
+# Bước 2: Cài crontab
+bash scripts/setup-cron.sh
+
+# Xem cron jobs đã cài
+crontab -l | grep delivery-system
+```
 
 ---
 
